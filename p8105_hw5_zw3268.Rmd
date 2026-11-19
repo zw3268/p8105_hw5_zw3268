@@ -154,3 +154,28 @@ test_sims =
   unnest(cols = result) |>
   mutate(reject = p_value < 0.05)
 ```
+
+### 4. Plot the rejection rate by true mean
+
+```{r rejection_plot}
+power_df =
+  test_sims |>
+  group_by(true_mu) |>
+  summarize(reject_rate = mean(reject))
+
+power_df |>
+  ggplot(aes(x = true_mu, y = reject_rate)) +
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = 0:6) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(
+    title = "Rejection rate by true mean",
+    x = "True mean",
+    y = "Proportion of tests rejecting the null"
+  )
+```
+
+### 5. Describe the relationship between effect size and power
+
+When the true mean was 0, the test rejected the null in `r round(100 * power_df$reject_rate[power_df$true_mu == 0], 1)`% of samples, close to the 5% Type I error rate. Power rose from `r round(100 * power_df$reject_rate[power_df$true_mu == 1], 1)`% at a true mean of 1 to `r round(100 * power_df$reject_rate[power_df$true_mu == 3], 1)`% at a true mean of 3. With the same sample size and variability, larger shifts from zero were easier to detect.
