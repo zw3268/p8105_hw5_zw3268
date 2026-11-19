@@ -44,3 +44,21 @@ birthday_prob =
   group_by(group_size) |>
   summarize(prob = mean(shared))
 ```
+
+### 4. Plot the probability of a shared birthday
+
+```{r birthday_plot}
+birthday_prob |>
+  ggplot(aes(x = group_size, y = 100 * prob)) +
+  geom_point() +
+  geom_line() +
+  labs(
+    title = "How likely is a shared birthday?",
+    x = "Number of people in the room",
+    y = "Estimated probability (%)"
+  )
+```
+
+### 5. Results
+
+With 23 people, `r round(100 * birthday_prob$prob[birthday_prob$group_size == 23], 1)`% of the simulated rooms had at least one shared birthday. With 50 people, that rose to `r round(100 * birthday_prob$prob[birthday_prob$group_size == 50], 1)`%. The chance rises quickly because each new person can match anyone already in the room.
