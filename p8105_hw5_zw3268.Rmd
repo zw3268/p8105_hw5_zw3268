@@ -179,3 +179,34 @@ power_df |>
 ### 5. Describe the relationship between effect size and power
 
 When the true mean was 0, the test rejected the null in `r round(100 * power_df$reject_rate[power_df$true_mu == 0], 1)`% of samples, close to the 5% Type I error rate. Power rose from `r round(100 * power_df$reject_rate[power_df$true_mu == 1], 1)`% at a true mean of 1 to `r round(100 * power_df$reject_rate[power_df$true_mu == 3], 1)`% at a true mean of 3. With the same sample size and variability, larger shifts from zero were easier to detect.
+
+### 6. Compare estimates across all samples and significant tests
+
+```{r mean_estimate_plot}
+all_means =
+  test_sims |>
+  group_by(true_mu) |>
+  summarize(avg_est = mean(mu_hat), samples = "All samples")
+
+rejected_means =
+  test_sims |>
+  filter(reject) |>
+  group_by(true_mu) |>
+  summarize(avg_est = mean(mu_hat), samples = "Null rejected")
+
+bind_rows(all_means, rejected_means) |>
+  ggplot(aes(x = true_mu, y = avg_est, color = samples)) +
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = 0:6) +
+  labs(
+    title = "Average estimate by true mean",
+    x = "True mean",
+    y = "Average estimated mean",
+    color = "Samples included"
+  )
+```
+
+### 7. Explain the difference between the estimates
+
+Across all samples, the average estimate stayed close to the true mean. When the true mean was 1, the average was `r round(all_means$avg_est[all_means$true_mu == 1], 2)` across all samples and `r round(rejected_means$avg_est[rejected_means$true_mu == 1], 2)` among those that rejected the null. At this small positive effect, samples with unusually high means were more likely to give a significant result, pulling the average upward. When the true mean was 0, the two-sided test picked up extremes in both directions, which tend to cancel out. At larger true means, nearly all tests rejected the null, so the two averages converged.
