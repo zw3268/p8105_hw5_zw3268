@@ -4,3 +4,43 @@ author: "Zeheng Wei (zw3268)"
 date: "2026-11-18"
 output: github_document
 ---
+
+```{r setup, include = FALSE}
+library(tidyverse)
+set.seed(1)
+
+knitr::opts_chunk$set(
+  fig.width = 7,
+  fig.asp = .6,
+  out.width = "90%"
+)
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+```
+
+# Problem 1
+
+### 1. Simulation setup
+
+I draw each person's birthday independently from 365 equally likely days, so the same day can come up more than once in a room.
+
+### 2. Simulate one room
+
+```{r sim_birthday}
+sim_birthday = function(n) {
+  birthdays = sample(1:365, n, replace = TRUE)
+  n_distinct(birthdays) < n
+}
+```
+
+### 3. Estimate the probability for each group size
+
+```{r birthday_prob}
+birthday_sims =
+  expand_grid(group_size = 2:50, iter = 1:10000) |>
+  mutate(shared = map_lgl(group_size, sim_birthday))
+
+birthday_prob =
+  birthday_sims |>
+  group_by(group_size) |>
+  summarize(prob = mean(shared))
+```
